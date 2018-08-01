@@ -10,26 +10,26 @@ import Utils
 
 def get_multitrack_placeholders(shape, input_shape=None, name=""):
     '''
-    Creates Tensorflow placeholders for mixture, accompaniment, and voice.
+    Creates Tensorflow placeholders for mixture, accompaniment, and drums.
     :param shape: Shape of each individual sample
-    :return: List of multitrack placeholders for mixture, accompaniment, and voice
+    :return: List of multitrack placeholders for mixture, accompaniment, and drums
     '''
     if input_shape is None:
         input_shape = shape
     m = tf.placeholder(dtype=tf.float32, shape=input_shape, name="mix_input" + name)
     a = tf.placeholder(dtype=tf.float32, shape=shape, name="acc_input" + name)
-    v = tf.placeholder(dtype=tf.float32, shape=shape, name="voice_input" + name)
-    return m,a,v
+    d = tf.placeholder(dtype=tf.float32, shape=shape, name="drums_input" + name)
+    return m,a,d
 
 def get_multitrack_input(shape, batch_size, name="", input_shape=None):
     '''
     Creates multitrack placeholders and a random shuffle queue based on it
-    :param input_shape: Shape of accompaniment and voice magnitudes
+    :param input_shape: Shape of accompaniment and drum magnitudes
     :param batch_size: Number of samples in each batch
     :param name: How to name the placeholders
-    :return: [List of mixture,acc,voice placeholders, random shuffle queue, symbolic batch sample from queue]
+    :return: [List of mixture,acc,drums placeholders, random shuffle queue, symbolic batch sample from queue]
     '''
-    m,a,v = get_multitrack_placeholders(shape, input_shape=input_shape)
+    m,a,d = get_multitrack_placeholders(shape, input_shape=input_shape)
 
     min_after_dequeue = 0
     buffer = 1000
@@ -40,7 +40,7 @@ def get_multitrack_input(shape, batch_size, name="", input_shape=None):
     queue = tf.RandomShuffleQueue(capacity, min_after_dequeue, [tf.float32, tf.float32, tf.float32], [input_shape, shape, shape])
     input_batch = queue.dequeue_many(batch_size, name="input_batch" + name)
 
-    return [m,a,v], queue, input_batch
+    return [m,a,d], queue, input_batch
 
 def crop(tensor, target_shape):
     '''
@@ -79,7 +79,7 @@ def load_and_enqueue(sess, model_config, queue, enqueue_op, input_ph, song_list)
     output_frames = input_ph[1].get_shape().as_list()[1]
     padding = (input_frames - output_frames)/2
 
-    for [mix, acc, voice] in song_list:
+    for [mix, acc, drums] in song_list:
         try:
             mix_mag, _ = audioFileToSpectrogram(mix.path, fftWindowSize=model_config["num_fft"], hopSize=model_config["num_hop"], expected_sr=model_config["expected_sr"], buffer=True)
             mix_mag = np.pad(mix_mag, [(0, 0), (padding, padding)], mode='constant', constant_values=0.0) # Pad along time axis
@@ -88,10 +88,10 @@ def load_and_enqueue(sess, model_config, queue, enqueue_op, input_ph, song_list)
                 acc_mag = np.zeros(mix_mag.shape, np.float32)
             else:
                 acc_mag, _ = audioFileToSpectrogram(acc.path, fftWindowSize=model_config["num_fft"], hopSize=model_config["num_hop"], expected_sr=model_config["expected_sr"], buffer=True)
-            if isinstance(voice, float):
-                voice_mag = np.zeros(mix_mag.shape, np.float32)
+            if isinstance(drums, float):
+                drum_mag = np.zeros(mix_mag.shape, np.float32)
             else:
-                voice_mag, _ = audioFileToSpectrogram(voice.path, fftWindowSize=model_config["num_fft"], hopSize=model_config["num_hop"], expected_sr=model_config["expected_sr"], buffer=True)
+                drum_mag, _ = audioFileToSpectrogram(drums.path, fftWindowSize=model_config["num_fft"], hopSize=model_config["num_hop"], expected_sr=model_config["expected_sr"], buffer=True)
         except Exception as e:
             print("Error while computing spectrogram for file " + mix.path + ". Skipping")
             print(e)
@@ -100,13 +100,13 @@ def load_and_enqueue(sess, model_config, queue, enqueue_op, input_ph, song_list)
         # Pad along the frequency axis
         mix_mag = Utils.pad_freqs(mix_mag, input_ph[0].get_shape().as_list()[:2])
         acc_mag = Utils.pad_freqs(acc_mag, input_ph[1].get_shape().as_list()[:2])
-        voice_mag = Utils.pad_freqs(voice_mag, input_ph[2].get_shape().as_list()[:2])
+        drum_mag = Utils.pad_freqs(drum_mag, input_ph[2].get_shape().as_list()[:2])
 
         # Partition spectrogram into sections and append to queue, keeping in mind the input might need additional context
         for pos in range(0, acc_mag.shape[1] - output_frames + 1, output_frames):
             sess.run([enqueue_op], feed_dict={input_ph[0] : mix_mag[:,pos:pos+input_frames,np.newaxis],
                                               input_ph[1] : acc_mag[:,pos:pos+output_frames,np.newaxis],
-                                              input_ph[2] : voice_mag[:,pos:pos+output_frames,np.newaxis]})
+                                              input_ph[2] : drum_mag[:,pos:pos+output_frames,np.newaxis]})
         print("Finished song " + mix.path)
 
     print("Input thread finished! Closing queue")

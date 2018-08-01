@@ -48,130 +48,86 @@ def getDSDFilelist(xml_path):
     db_path = root.find("./databaseFolderPath").text
     tracks = root.findall(".//track")
 
-    train_vocals, test_vocals, train_mixes, test_mixes, train_accs, test_accs = list(), list(), list(), list(), list(), list()
+    train_drums, test_drums, train_mixes, test_mixes, train_accs, test_accs = list(), list(), list(), list(), list(), list()
 
     for track in tracks:
-        # Get mix and vocal instruments
-        vocals = create_sample(db_path, track.xpath(".//instrument[instrumentName='Voice']")[0])
+        # Get mix and drum instruments
+        drums = create_sample(db_path, track.xpath(".//instrument[instrumentName='Drums']")[0])
         mix = create_sample(db_path, track.xpath(".//instrument[instrumentName='Mix']")[0])
-        [acc_path] = subtract_audio([mix.path], [vocals.path])
-        acc = Sample(acc_path, vocals.sample_rate, vocals.channels, vocals.duration) # Accompaniment has same signal properties as vocals and mix
+        [acc_path] = subtract_audio([mix.path], [drums.path])
+        acc = Sample(acc_path, drums.sample_rate, drums.channels, drums.duration) # Accompaniment has same signal properties as drums and mix
 
         if track.xpath("./databaseSplit")[0].text == "Training":
-            train_vocals.append(vocals)
+            train_drums.append(drums)
             train_mixes.append(mix)
             train_accs.append(acc)
         else:
-            test_vocals.append(vocals)
+            test_drums.append(drums)
             test_mixes.append(mix)
             test_accs.append(acc)
 
-    return [train_mixes, train_accs, train_vocals], [test_mixes, test_accs, test_vocals]
+    return [train_mixes, train_accs, train_drums], [test_mixes, test_accs, test_drums]
 
-def getCCMixter(xml_path):
-    tree = etree.parse(xml_path)
-    root = tree.getroot()
-    db_path = root.find("./databaseFolderPath").text
-    tracks = root.findall(".//track")
 
-    mixes, accs, vocals = list(), list(), list()
+# TODO: Investigate ccmixter and difficulty of generating xml with drums instead of vocals
+#
+# def getCCMixter(xml_path):
+#     tree = etree.parse(xml_path)
+#     root = tree.getroot()
+#     db_path = root.find("./databaseFolderPath").text
+#     tracks = root.findall(".//track")
+#
+#     mixes, accs, vocals = list(), list(), list()
+#
+#     for track in tracks:
+#         # Get mix and vocal instruments
+#         voice = create_sample(db_path, track.xpath(".//instrument[instrumentName='Voice']")[0])
+#         mix = create_sample(db_path, track.xpath(".//instrument[instrumentName='Mix']")[0])
+#         acc = create_sample(db_path, track.xpath(".//instrument[instrumentName='Instrumental']")[0])
+#
+#         mixes.append(mix)
+#         accs.append(acc)
+#         vocals.append(voice)
+#
+#     return [mixes, accs, vocals]
 
-    for track in tracks:
-        # Get mix and vocal instruments
-        voice = create_sample(db_path, track.xpath(".//instrument[instrumentName='Voice']")[0])
-        mix = create_sample(db_path, track.xpath(".//instrument[instrumentName='Mix']")[0])
-        acc = create_sample(db_path, track.xpath(".//instrument[instrumentName='Instrumental']")[0])
 
-        mixes.append(mix)
-        accs.append(acc)
-        vocals.append(voice)
+# TODO: find or code MedleyDB code to replace this function getMedleyDB()
+# def getMedleyDB(xml_path):
+#     tree = etree.parse(xml_path)
+#     root = tree.getroot()
+#     db_path = root.find("./databaseFolderPath").text
+#
+#     mixes, accs, vocals = list(), list(), list()
+#
+#     tracks = root.xpath(".//track")
+#     for track in tracks:
+#         instrument_paths = list()
+#         # Mix together vocals, if they exist
+#         vocal_tracks = track.xpath(".//instrument[instrumentName='Voice']/relativeFilepath") + \
+#                        track.xpath(".//instrument[instrumentName='Voice']/relativeFilepath") + \
+#                        track.xpath(".//instrument[instrumentName='Voice']/relativeFilepath")
+#         if len(vocal_tracks) > 0: # If there are vocals, get their file paths and mix them together
+#             vocal_track = Input.Input.add_audio([db_path + os.path.sep + f.text for f in vocal_tracks], "vocalmix")
+#             instrument_paths.append(vocal_track)
+#             vocals.append(Sample.from_path(vocal_track))
+#         else: # Otherwise append duration of track so silent input can be generated later on-the-fly
+#             duration = float(track.xpath("./instrumentList/instrument/length")[0].text)
+#             vocals.append(duration)
+#
+#         # Mix together accompaniment, if it exists
+#         acc_tracks = track.xpath(".//instrument[not(instrumentName='Voice') and not(instrumentName='Mix') and not(instrumentName='Instrumental')]/relativeFilepath") #TODO # We assume that there is no distinction between male/female here
+#         if len(acc_tracks) > 0:  # If there are vocals, get their file paths and mix them together
+#             acc_track = Input.Input.add_audio([db_path + os.path.sep + f.text for f in acc_tracks], "accmix")
+#             instrument_paths.append(acc_track)
+#             accs.append(Sample.from_path(acc_track))
+#         else:  # Otherwise append duration of track so silent input can be generated later on-the-fly
+#             duration = float(track.xpath("./instrumentList/instrument/length")[0].text)
+#             accs.append(duration)
+#
+#         # Mix together vocals and accompaniment
+#         mix_track = Input.Input.add_audio(instrument_paths, "totalmix")
+#         mixes.append(Sample.from_path(mix_track))
+#
+#     return [mixes, accs, vocals]
 
-    return [mixes, accs, vocals]
-
-def getIKala(xml_path):
-    tree = etree.parse(xml_path)
-    root = tree.getroot()
-    db_path = root.find("./databaseFolderPath").text
-    tracks = root.findall(".//track")
-
-    mixes, accs, vocals = list(), list(), list()
-
-    for track in tracks:
-        mix = create_sample(db_path, track.xpath(".//instrument[instrumentName='Mix']")[0])
-        orig_path = mix.path
-        mix_path = orig_path + "_mix.wav"
-        acc_path = orig_path + "_acc.wav"
-        voice_path = orig_path + "_voice.wav"
-
-        mix_audio, mix_sr = librosa.load(mix.path, sr=None, mono=False)
-        mix.path = mix_path
-        librosa.output.write_wav(mix_path, np.sum(mix_audio, axis=0), mix_sr)
-        librosa.output.write_wav(acc_path, mix_audio[0,:], mix_sr)
-        librosa.output.write_wav(voice_path, mix_audio[1, :], mix_sr)
-
-        voice = create_sample(mix.path, track.xpath(".//instrument[instrumentName='Voice']")[0])
-        voice.path = voice_path
-        acc = create_sample(mix.path, track.xpath(".//instrument[instrumentName='Instrumental']")[0])
-        acc.path = acc_path
-
-        mixes.append(mix)
-        accs.append(acc)
-        vocals.append(voice)
-
-    return [mixes, accs, vocals]
-
-def getMedleyDB(xml_path):
-    tree = etree.parse(xml_path)
-    root = tree.getroot()
-    db_path = root.find("./databaseFolderPath").text
-
-    mixes, accs, vocals = list(), list(), list()
-
-    tracks = root.xpath(".//track")
-    for track in tracks:
-        instrument_paths = list()
-        # Mix together vocals, if they exist
-        vocal_tracks = track.xpath(".//instrument[instrumentName='Voice']/relativeFilepath") + \
-                       track.xpath(".//instrument[instrumentName='Voice']/relativeFilepath") + \
-                       track.xpath(".//instrument[instrumentName='Voice']/relativeFilepath")
-        if len(vocal_tracks) > 0: # If there are vocals, get their file paths and mix them together
-            vocal_track = Input.Input.add_audio([db_path + os.path.sep + f.text for f in vocal_tracks], "vocalmix")
-            instrument_paths.append(vocal_track)
-            vocals.append(Sample.from_path(vocal_track))
-        else: # Otherwise append duration of track so silent input can be generated later on-the-fly
-            duration = float(track.xpath("./instrumentList/instrument/length")[0].text)
-            vocals.append(duration)
-
-        # Mix together accompaniment, if it exists
-        acc_tracks = track.xpath(".//instrument[not(instrumentName='Voice') and not(instrumentName='Mix') and not(instrumentName='Instrumental')]/relativeFilepath") #TODO # We assume that there is no distinction between male/female here
-        if len(acc_tracks) > 0:  # If there are vocals, get their file paths and mix them together
-            acc_track = Input.Input.add_audio([db_path + os.path.sep + f.text for f in acc_tracks], "accmix")
-            instrument_paths.append(acc_track)
-            accs.append(Sample.from_path(acc_track))
-        else:  # Otherwise append duration of track so silent input can be generated later on-the-fly
-            duration = float(track.xpath("./instrumentList/instrument/length")[0].text)
-            accs.append(duration)
-
-        # Mix together vocals and accompaniment
-        mix_track = Input.Input.add_audio(instrument_paths, "totalmix")
-        mixes.append(Sample.from_path(mix_track))
-
-    return [mixes, accs, vocals]
-
-def getFMA(xml_path):
-    tree = etree.parse(xml_path)
-    root = tree.getroot()
-    db_path = root.find("./databaseFolderPath").text
-
-    mixes, accs, vocals = list(), list(), list()
-
-    vocal_tracks = root.xpath(".//track/instrumentList/instrument[instrumentName='Mix']")
-    instrumental_tracks = root.xpath(".//track/instrumentList/instrument[instrumentName='Instrumental']")
-    for instr in vocal_tracks:
-        mixes.append(create_sample(db_path,instr))
-
-    for instr in instrumental_tracks:
-        mixes.append(create_sample(db_path,instr))
-        accs.append(create_sample(db_path,instr))
-
-    return mixes, accs, vocals
