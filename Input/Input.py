@@ -378,6 +378,7 @@ def spectrogramToAudioFile(magnitude, fftWindowSize, hopSize, phaseIterations=10
     '''
     Computes an audio signal from the given magnitude spectrogram, and optionally an initial phase.
     Griffin-Lim is executed to recover/refine the given the phase from the magnitude spectrogram.
+    :rtype: object
     :param magnitude: Magnitudes to be converted to audio
     :param fftWindowSize: Size of FFT window used to create magnitudes
     :param hopSize: Hop size in frames used to create magnitudes

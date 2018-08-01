@@ -39,17 +39,17 @@ def bss_evaluate(model_config, dataset, load_model):
     separator_func = separator_class.get_output
 
     # Placeholders and input normalisation
-    input_ph, queue, [mix_context, acc, voice] = Input.get_multitrack_input(sep_output_shape[1:], 1, name="input_batch", input_shape=sep_input_shape[1:])
+    input_ph, queue, [mix_context, acc, drums] = Input.get_multitrack_input(sep_output_shape[1:], 1, name="input_batch", input_shape=sep_input_shape[1:])
 
     mix = Input.crop(mix_context, sep_output_shape)
-    mix_norm, mix_context_norm, acc_norm, voice_norm = Input.norm(mix), Input.norm(mix_context), Input.norm(acc), Input.norm(voice)
+    mix_norm, mix_context_norm, acc_norm, drums_norm = Input.norm(mix), Input.norm(mix_context), Input.norm(acc), Input.norm(drums)
 
     print("Testing...")
 
     # BUILD MODELS
     # Separator
-    separator_acc_norm, separator_voice_norm = separator_func(mix_context_norm, reuse=False)
-    separator_acc, separator_voice = Input.denorm(separator_acc_norm), Input.denorm(separator_voice_norm)
+    separator_acc_norm, separator_drums_norm = separator_func(mix_context_norm, reuse=False)
+    separator_acc, separator_drums = Input.denorm(separator_acc_norm), Input.denorm(separator_drums_norm)
 
     # Start session and queue input threads
     sess = tf.Session()
@@ -87,7 +87,7 @@ def bss_evaluate(model_config, dataset, load_model):
 
         # Preallocate source predictions (same shape as input mixture)
         acc_pred_mag = np.zeros(mix_mag.shape, np.float32)
-        voice_pred_mag = np.zeros(mix_mag.shape, np.float32)
+        drums_pred_mag = np.zeros(mix_mag.shape, np.float32)
 
         input_time_frames = sep_input_shape[2]
         output_time_frames = sep_output_shape[2]
@@ -108,16 +108,16 @@ def bss_evaluate(model_config, dataset, load_model):
             mix_mag_part = mix_mag_part[np.newaxis,:,:,np.newaxis]
 
             # Fetch network prediction
-            acc_mag_part, voice_mag_part = sess.run([separator_acc, separator_voice], feed_dict={mix_context:mix_mag_part})
+            acc_mag_part, drums_mag_part = sess.run([separator_acc, separator_drums], feed_dict={mix_context:mix_mag_part})
 
             # Save predictions
             #source_shape = [1, freq_bins, acc_mag_part.shape[2], 1]
             acc_pred_mag[:,source_pos:source_pos+output_time_frames] = acc_mag_part[0,:-1,:,0]
-            voice_pred_mag[:,source_pos:source_pos + output_time_frames] = voice_mag_part[0,:-1,:,0]
+            drums_pred_mag[:,source_pos:source_pos + output_time_frames] = drums_mag_part[0,:-1,:,0]
 
         # Spectrograms to audio, using mixture phase
         acc_pred_audio = Input.spectrogramToAudioFile(acc_pred_mag, model_config["num_fft"], model_config["num_hop"], phase=mix_ph, length=mix_length, phaseIterations=0)
-        voice_pred_audio = Input.spectrogramToAudioFile(voice_pred_mag, model_config["num_fft"], model_config["num_hop"], phase=mix_ph, length=mix_length, phaseIterations=0)
+        drums_pred_audio = Input.spectrogramToAudioFile(drums_pred_mag, model_config["num_fft"], model_config["num_hop"], phase=mix_ph, length=mix_length, phaseIterations=0)
 
         # Load original sources
         if isinstance(multitrack[1], float):
@@ -125,22 +125,22 @@ def bss_evaluate(model_config, dataset, load_model):
         else:
             acc_audio, _ = librosa.load(multitrack[1].path, sr=model_config["expected_sr"])
         if isinstance(multitrack[2], float):
-            voice_audio = np.zeros(mix_audio.shape, np.float32)
+            drum_audio = np.zeros(mix_audio.shape, np.float32)
         else:
-            voice_audio, _ = librosa.load(multitrack[2].path, sr=model_config["expected_sr"])
+            drum_audio, _ = librosa.load(multitrack[2].path, sr=model_config["expected_sr"])
 
         # Check if any reference source is completely silent, if so, inject some very slight noise into it to avoid problems during SDR calculation with zero signals
         reference_zero = False
         if np.max(np.abs(acc_audio)) == 0.0:
             acc_audio += np.random.uniform(-1e-10, 1e-10, size=acc_audio.shape)
             reference_zero = True
-        if np.max(np.abs(voice_audio)) == 0.0:
-            voice_audio += np.random.uniform(-1e-10, 1e-10, size=voice_audio.shape)
+        if np.max(np.abs(drum_audio)) == 0.0:
+            drum_audio += np.random.uniform(-1e-10, 1e-10, size=drum_audio.shape)
             reference_zero = True
 
-        # Evaluate BSS according to MIREX voice separation method # http://www.music-ir.org/mirex/wiki/2016:Singing_Voice_Separation
-        ref_sources = np.vstack([acc_audio, voice_audio]) #/ np.linalg.norm(acc_audio + voice_audio) # Normalized audio
-        pred_sources = np.vstack([acc_pred_audio, voice_pred_audio]) #/ np.linalg.norm(acc_pred_audio + voice_pred_audio) # Normalized estimates
+        # Evaluate BSS according to MIREX drums separation method # http://www.music-ir.org/mirex/wiki/2016:Singing_Voice_Separation
+        ref_sources = np.vstack([acc_audio, drum_audio]) #/ np.linalg.norm(acc_audio + drum_audio) # Normalized audio
+        pred_sources = np.vstack([acc_pred_audio, drums_pred_audio]) #/ np.linalg.norm(acc_pred_audio + drums_pred_audio) # Normalized estimates
         validate(ref_sources, pred_sources)
         scores = bss_eval_sources(ref_sources, pred_sources, compute_permutation=False)
 
@@ -155,15 +155,15 @@ def bss_evaluate(model_config, dataset, load_model):
             norm_scores = np.array(scores) - np.array(mix_scores)
 
             # Compute SNR: 10 log_10 ( ||s_target||^2 / ||s_target - alpha * s_estimate||^2 ), but scale target to get optimal SNR (opt. wrt. alpha)
-            voice_snr = alpha_snr(voice_audio, voice_pred_audio)
+            drums_snr = alpha_snr(drum_audio, drums_pred_audio)
             acc_snr = alpha_snr(acc_audio, acc_pred_audio)
-            voice_ref_snr = alpha_snr(voice_audio, mix_audio)
+            drums_ref_snr = alpha_snr(drum_audio, mix_audio)
             acc_ref_snr = alpha_snr(acc_audio, mix_audio)
 
             song_info["NSDR"] = norm_scores[0]
             song_info["NSIR"] = norm_scores[1]
-            song_info["SNR"] = np.array([acc_snr, voice_snr])
-            song_info["NSNR"] = np.array([acc_snr - acc_ref_snr, voice_snr - voice_ref_snr])
+            song_info["SNR"] = np.array([acc_snr, drums_snr])
+            song_info["NSNR"] = np.array([acc_snr - acc_ref_snr, drums_snr - drums_ref_snr])
 
         song_scores.append(song_info)
         print(song_info)
