@@ -1,6 +1,6 @@
 <database>
   <databaseName>DSD100</databaseName>
-  <databaseFolderPath>/mnt/daten/Datasets/DSD100</databaseFolderPath>
+  <databaseFolderPath>~/data/DSD100</databaseFolderPath>
   <trackList>
     <track>
       <title>Heart Peripheral</title>

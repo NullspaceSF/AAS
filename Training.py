@@ -13,7 +13,7 @@ import Utils
 import cPickle as pickle
 import Test
 
-ex = Experiment('Adversarial_Source_Separation')
+ex = Experiment('Drum_Source_Separation')
 
 @ex.config
 def cfg():
@@ -52,20 +52,20 @@ def test(model_config, audio_list, model_folder, load_model):
     separator_func = separator_class.get_output
 
     # Placeholders and input normalisation
-    input_ph, queue, [mix_context, acc, voice] = Input.get_multitrack_input(sep_output_shape[1:], model_config["batch_size"], name="input_batch", input_shape=sep_input_shape[1:])
+    input_ph, queue, [mix_context, acc, drums] = Input.get_multitrack_input(sep_output_shape[1:], model_config["batch_size"], name="input_batch", input_shape=sep_input_shape[1:])
     enqueue_op = queue.enqueue(input_ph)
 
     mix = Input.crop(mix_context, sep_output_shape)
-    mix_norm, mix_context_norm, acc_norm, voice_norm = Input.norm(mix), Input.norm(mix_context), Input.norm(acc), Input.norm(voice)
+    mix_norm, mix_context_norm, acc_norm, drum_norm = Input.norm(mix), Input.norm(mix_context), Input.norm(acc), Input.norm(drums)
 
     print("Testing...")
 
     # BUILD MODELS
     # Separator
-    separator_acc_norm, separator_voice_norm = separator_func(mix_context_norm, reuse=False)
+    separator_acc_norm, separator_drums_norm = separator_func(mix_context_norm, reuse=False)
 
     # Supervised objective
-    sup_separator_loss = tf.reduce_mean(tf.square(separator_voice_norm - voice_norm)) + tf.reduce_mean(tf.square(separator_acc_norm - acc_norm))
+    sup_separator_loss = tf.reduce_mean(tf.square(separator_drums_norm - drum_norm)) + tf.reduce_mean(tf.square(separator_acc_norm - acc_norm))
 
     tf.summary.scalar("sup_sep_loss", sup_separator_loss, collections=['sup', 'unsup'])
 
@@ -165,42 +165,42 @@ def train(model_config, sup_dataset, model_folder, unsup_dataset=None, load_mode
             print("Started worker!")
 
     # Placeholders and input normalisation
-    mix_context,acc,voice = Input.get_multitrack_placeholders(sep_output_shape, sep_input_shape, "sup")
+    mix_context,acc,drums = Input.get_multitrack_placeholders(sep_output_shape, sep_input_shape, "sup")
     mix = Input.crop(mix_context, sep_output_shape)
-    mix_norm, mix_context_norm, acc_norm, voice_norm = Input.norm(mix), Input.norm(mix_context), Input.norm(acc), Input.norm(voice)
+    mix_norm, mix_context_norm, acc_norm, drums_norm = Input.norm(mix), Input.norm(mix_context), Input.norm(acc), Input.norm(drums)
 
     if unsup_dataset != None:
-        mix_context_u,acc_u,voice_u = Input.get_multitrack_placeholders(sep_output_shape, sep_input_shape, "unsup")
+        mix_context_u,acc_u,drums_u = Input.get_multitrack_placeholders(sep_output_shape, sep_input_shape, "unsup")
         mix_u = Input.crop(mix_context_u, sep_output_shape)
-        mix_norm_u, mix_context_norm_u, acc_norm_u, voice_norm_u = Input.norm(mix_u), Input.norm(mix_context_u), Input.norm(acc_u), Input.norm(voice_u)
+        mix_norm_u, mix_context_norm_u, acc_norm_u, drums_norm_u = Input.norm(mix_u), Input.norm(mix_context_u), Input.norm(acc_u), Input.norm(drums_u)
 
     print("Training...")
 
     # BUILD MODELS
     # Separator
-    separator_acc_norm, separator_voice_norm = separator_func(mix_context_norm, reuse=False)
-    separator_acc, separator_voice = Input.denorm(separator_acc_norm), Input.denorm(separator_voice_norm)
+    separator_acc_norm, separator_drums_norm = separator_func(mix_context_norm, reuse=False)
+    separator_acc, separator_drums = Input.denorm(separator_acc_norm), Input.denorm(separator_drums_norm)
     if unsup_dataset != None:
-        separator_acc_norm_u, separator_voice_norm_u = separator_func(mix_context_norm_u, reuse=True)
-        separator_acc_u, separator_voice_u = Input.denorm(separator_acc_norm_u), Input.denorm(separator_voice_norm_u)
-        mask_loss_u = tf.reduce_mean(tf.square(mix_u - separator_acc_u - separator_voice_u))
-    mask_loss = tf.reduce_mean(tf.square(mix - separator_acc - separator_voice))
+        separator_acc_norm_u, separator_drums_norm_u = separator_func(mix_context_norm_u, reuse=True)
+        separator_acc_u, separator_drums_u = Input.denorm(separator_acc_norm_u), Input.denorm(separator_drums_norm_u)
+        mask_loss_u = tf.reduce_mean(tf.square(mix_u - separator_acc_u - separator_drums_u))
+    mask_loss = tf.reduce_mean(tf.square(mix - separator_acc - separator_drums))
 
     # SUMMARIES FOR INPUT AND SEPARATOR
     tf.summary.scalar("mask_loss", mask_loss, collections=["sup", "unsup"])
     if unsup_dataset != None:
         tf.summary.scalar("mask_loss_u", mask_loss_u, collections=["unsup"])
         tf.summary.scalar("acc_norm_mean_u", tf.reduce_mean(acc_norm_u), collections=["acc_disc"])
-        tf.summary.scalar("voice_norm_mean_u", tf.reduce_mean(voice_norm_u), collections=["voice_disc"])
+        tf.summary.scalar("drums_norm_mean_u", tf.reduce_mean(drums_norm_u), collections=["drums_disc"])
         tf.summary.scalar("acc_sep_norm_mean_u", tf.reduce_mean(separator_acc_norm_u), collections=["acc_disc"])
-        tf.summary.scalar("voice_sep_norm_mean_u", tf.reduce_mean(separator_voice_norm_u), collections=["voice_disc"])
+        tf.summary.scalar("drums_sep_norm_mean_u", tf.reduce_mean(separator_drums_norm_u), collections=["drums_disc"])
     tf.summary.scalar("acc_norm_mean", tf.reduce_mean(acc_norm), collections=['sup'])
-    tf.summary.scalar("voice_norm_mean", tf.reduce_mean(voice_norm), collections=['sup'])
+    tf.summary.scalar("drums_norm_mean", tf.reduce_mean(drums_norm), collections=['sup'])
     tf.summary.scalar("acc_sep_norm_mean", tf.reduce_mean(separator_acc_norm), collections=['sup'])
-    tf.summary.scalar("voice_sep_norm_mean", tf.reduce_mean(separator_voice_norm), collections=['sup'])
+    tf.summary.scalar("drums_sep_norm_mean", tf.reduce_mean(separator_drums_norm), collections=['sup'])
 
     tf.summary.image("sep_acc_norm", separator_acc_norm, collections=["sup", "unsup"])
-    tf.summary.image("sep_voice_norm", separator_voice_norm, collections=["sup", "unsup"])
+    tf.summary.image("sep_drums_norm", separator_drums_norm, collections=["sup", "unsup"])
 
     # BUILD DISCRIMINATORS, if unsupervised training
     unsup_separator_loss = 0
@@ -210,20 +210,20 @@ def train(model_config, sup_dataset, model_folder, unsup_dataset=None, load_mode
         # Define real and fake inputs for both discriminators - if separator output and dsicriminator input shapes do not fit perfectly, we will do a centre crop and only discriminate that part
         acc_real_input = Input.crop(acc_norm_u, disc_input_shape)
         acc_fake_input = Input.crop(separator_acc_norm_u, disc_input_shape)
-        voice_real_input = Input.crop(voice_norm_u, disc_input_shape)
-        voice_fake_input = Input.crop(separator_voice_norm_u, disc_input_shape)
+        drums_real_input = Input.crop(drums_norm_u, disc_input_shape)
+        drums_fake_input = Input.crop(separator_drums_norm_u, disc_input_shape)
 
         #WGAN
         acc_disc_loss, acc_disc_real, acc_disc_fake, acc_grad_pen, acc_wasserstein_dist = \
             Models.WGAN_Critic.create_critic(model_config, real_input=acc_real_input, fake_input=acc_fake_input, scope="acc_disc", network_func=disc_func)
-        voice_disc_loss, voice_disc_real, voice_disc_fake, voice_grad_pen, voice_wasserstein_dist = \
-            Models.WGAN_Critic.create_critic(model_config, real_input=voice_real_input, fake_input=voice_fake_input, scope="voice_disc", network_func=disc_func)
+        drums_disc_loss, drums_disc_real, drums_disc_fake, drums_grad_pen, drums_wasserstein_dist = \
+            Models.WGAN_Critic.create_critic(model_config, real_input=drums_real_input, fake_input=drums_fake_input, scope="drums_disc", network_func=disc_func)
 
-        L_u = - tf.reduce_mean(voice_disc_fake)  - tf.reduce_mean(acc_disc_fake) # WGAN based loss for separator (L_u in paper)
+        L_u = - tf.reduce_mean(drums_disc_fake)  - tf.reduce_mean(acc_disc_fake) # WGAN based loss for separator (L_u in paper)
         unsup_separator_loss = model_config["alpha"] * L_u + model_config["beta"] * mask_loss_u # Unsupervised loss for separator: WGAN-based loss L_u and additive penalty term (mask loss), weighted by alpha and beta (hyperparameters)
 
     # Supervised objective: MSE in log-normalized magnitude space
-    sup_separator_loss = tf.reduce_mean(tf.square(separator_voice_norm - voice_norm)) + \
+    sup_separator_loss = tf.reduce_mean(tf.square(separator_drums_norm - drums_norm)) + \
                          tf.reduce_mean(tf.square(separator_acc_norm - acc_norm))
 
     separator_loss = sup_separator_loss + unsup_separator_loss # Total separator loss: Supervised + unsupervised loss
@@ -244,13 +244,13 @@ def train(model_config, sup_dataset, model_folder, unsup_dataset=None, load_mode
     separator_vars = Utils.getTrainableVariables("separator")
     print("Sep_Vars: " + str(Utils.getNumParams(separator_vars)))
 
-    acc_disc_vars, voice_disc_vars = Utils.getTrainableVariables("acc_disc"), Utils.getTrainableVariables("voice_disc")
-    print("Voice_Disc_Vars: " + str(Utils.getNumParams(voice_disc_vars)))
+    acc_disc_vars, drums_disc_vars = Utils.getTrainableVariables("acc_disc"), Utils.getTrainableVariables("drums_disc")
+    print("Drums_Disc_Vars: " + str(Utils.getNumParams(drums_disc_vars)))
     print("Acc_Disc_Vars: " + str(Utils.getNumParams(acc_disc_vars)))
 
     if unsup_dataset != None:
-        with tf.variable_scope("voice_disc_solver"):
-            voice_disc_solver = tf.train.AdamOptimizer(learning_rate=disc_lr).minimize(voice_disc_loss, var_list=voice_disc_vars, colocate_gradients_with_ops=True)
+        with tf.variable_scope("drums_disc_solver"):
+            drums_disc_solver = tf.train.AdamOptimizer(learning_rate=disc_lr).minimize(drums_disc_loss, var_list=drums_disc_vars, colocate_gradients_with_ops=True)
         with tf.variable_scope("acc_disc_solver"):
             acc_disc_solver = tf.train.AdamOptimizer(learning_rate=disc_lr).minimize(acc_disc_loss, var_list=acc_disc_vars, colocate_gradients_with_ops=True)
         with tf.variable_scope("unsup_separator_solver"):
@@ -262,7 +262,7 @@ def train(model_config, sup_dataset, model_folder, unsup_dataset=None, load_mode
 
     # SUMMARIES FOR DISCRIMINATORS AND LOSSES
     acc_disc_summaries = tf.summary.merge_all(key="acc_disc")
-    voice_disc_summaries = tf.summary.merge_all(key="voice_disc")
+    drums_disc_summaries = tf.summary.merge_all(key="drums_disc")
     tf.summary.scalar("sup_sep_loss", sup_separator_loss, collections=['sup', "unsup"])
     tf.summary.scalar("unsup_sep_loss", unsup_separator_loss, collections=['unsup'])
     tf.summary.scalar("sep_loss", separator_loss, collections=["sup", "unsup"])
@@ -305,13 +305,13 @@ def train(model_config, sup_dataset, model_folder, unsup_dataset=None, load_mode
                         feed_dict={mix_context_u: batches[0], acc_u: batches[1]}
                     )
 
-                    _,  _voice_disc_summaries = sess.run(
-                        [voice_disc_solver, voice_disc_summaries],
-                        feed_dict={mix_context_u: batches[0], voice_u: batches[2]}
+                    _,  _drums_disc_summaries = sess.run(
+                        [drums_disc_solver, drums_disc_summaries],
+                        feed_dict={mix_context_u: batches[0], drums_u: batches[2]}
                     )
 
                     writer.add_summary(_acc_disc_summaries, global_step=it)
-                    writer.add_summary(_voice_disc_summaries, global_step=it)
+                    writer.add_summary(_drums_disc_summaries, global_step=it)
 
                     it += 1
 
@@ -326,15 +326,15 @@ def train(model_config, sup_dataset, model_folder, unsup_dataset=None, load_mode
 
             _, _unsup_summaries, _sup_summaries = sess.run(
                 [unsup_separator_solver, unsup_summaries, sup_summaries],
-                feed_dict={mix_context: sup_batch[0], acc: sup_batch[1], voice: sup_batch[2],
-                           mix_context_u: unsup_batches[0], acc_u:unsup_batches[1], voice_u:unsup_batches[2]}
+                feed_dict={mix_context: sup_batch[0], acc: sup_batch[1], drums: sup_batch[2],
+                           mix_context_u: unsup_batches[0], acc_u:unsup_batches[1], drums_u:unsup_batches[2]}
             )
             writer.add_summary(_unsup_summaries, global_step=_global_step)
         else:
             # PURELY SUPERVISED TRAINING
             _, _sup_summaries = sess.run(
                [sup_separator_solver, sup_summaries],
-                feed_dict={mix_context: sup_batch[0], acc: sup_batch[1], voice: sup_batch[2]})
+                feed_dict={mix_context: sup_batch[0], acc: sup_batch[1], drums: sup_batch[2]})
             writer.add_summary(_sup_summaries, global_step=_global_step)
 
         # Increment step counter, check if maximum iterations per epoch is achieved and stop in that case
@@ -412,21 +412,21 @@ def dsd_100_experiment(model_config):
         
         # MODIFY BELOW TO INSERT DSD100, MedleyDB, CCMixter datasets.
         # Each returned item from the dataset reading function (dsd_train, dsd_test, mdb, ccm, ikala) has to be of the following structure:
-        # List of 3 elements, each of which is a
-        #       List of Sample objects (instantiations of the Sample class - you need to create these as part of your dataset reading function). Each sample represents an audio track
-        # The list of 3 elements has to be in order: A list of mixtures, accompaniments and voices, in that order.
+        # List of 3 elements, each of which is a List of Sample objects (instantiations of the Sample class -
+        # you need to create these as part of your dataset reading function). Each sample represents an audio track
+        # The list of 3 elements has to be in order: A list of mixtures, accompaniments and drums, in that order.
         # Example: dsd_train[1] - List of Sample objects, each sample object represents an accompaniment audio file
-        # The lists have to be matched: The mixture audio at dsd_train[0][20] has to have its accompaniment at dsd_train[1][20] and voice at dsd_train[2][20]
+        # The lists have to be matched: The mixture audio at dsd_train[0][20] has to have its accompaniment at dsd_train[1][20] and drums at dsd_train[2][20]
         # This means that for iKala and MedleyDB you need to generate separate vocal and accompaniment audio manually first!
-        # For MedleyDB, we mix together stems with/without vocals to generate the vocal and accompaniment track respectively, then add those signals together for the mixture track, to ensure mix=acc+voice
+        # For MedleyDB, we mix together stems with/without drums to generate the drum and accompaniment track respectively, then add those signals together for the mixture track, to ensure mix=acc+drums
 _       '''
 
         ###################### MODIFY BELOW
 
         dsd_train, dsd_test = Datasets.getDSDFilelist("DSD100.xml")
-        mdb = Datasets.getMedleyDB("MedleyDB.xml")
-        ccm = Datasets.getCCMixter("CCMixter.xml")
-        ikala = Datasets.getIKala("iKala.xml")
+        # mdb = Datasets.getMedleyDB("MedleyDB.xml")
+        # ccm = Datasets.getCCMixter("CCMixter.xml")
+        # ikala = Datasets.getIKala("iKala.xml")
 
         ###################### MODIFY ABOVE
 
@@ -438,23 +438,23 @@ _       '''
         dataset["test"] = [dsd_test[0][25:], dsd_test[1][25:], dsd_test[2][25:]]
 
         # Go through MedleyDB, CCMixter, iKala
-        for ds in [mdb, ccm, ikala]:
-            num = len(ds[0]) // 3
-            # Split dataset in three equal-sized parts, and assign each to the unsupervised dataset, validation and test dataset respectively
-            for i in range(3):
-                # Only add more examples to unsupervised and test sets, since in this experiment we care about preventing overfitting to the supervised dataset
-                dataset["train_unsup"][i].extend(ds[i][:num])
-                dataset["valid"][i].extend(ds[i][num:2 * num])
-                dataset["test"][i].extend(ds[i][2 * num:])
+        # for ds in [mdb, ccm, ikala]:
+        #     num = len(ds[0]) // 3
+        #     # Split dataset in three equal-sized parts, and assign each to the unsupervised dataset, validation and test dataset respectively
+        #     for i in range(3):
+        #         # Only add more examples to unsupervised and test sets, since in this experiment we care about preventing overfitting to the supervised dataset
+        #         dataset["train_unsup"][i].extend(ds[i][:num])
+        #         dataset["valid"][i].extend(ds[i][num:2 * num])
+        #         dataset["test"][i].extend(ds[i][2 * num:])
 
         ### DELETE ALL OF THE ABOVE IF YOU WANT TO  USE YOUR OWN DATASETS OR PARTITIONING,
         ### AND READ IN YOUR OWN DATASET OBJECTS ACCORDING TO THE RULES SHOWN ABOVE, THEN ASSIGN THEM TO THE DATASET DICT WITH
         ### ENTRIES train_sup, valid and test, RESPECTIVELY.
 
-        # Zip up all paired dataset partitions so we have (mixture, accompaniment, voice) tuples
-        dataset["train_sup"] = zip(dataset["train_sup"][0], dataset["train_sup"][1], dataset["train_sup"][2])
-        dataset["valid"] = zip(dataset["valid"][0], dataset["valid"][1], dataset["valid"][2])
-        dataset["test"] = zip(dataset["test"][0], dataset["test"][1], dataset["test"][2])
+        # Zip up all paired dataset partitions so we have (mixture, accompaniment, drums) tuples
+        # dataset["train_sup"] = zip(dataset["train_sup"][0], dataset["train_sup"][1], dataset["train_sup"][2])
+        # dataset["valid"] = zip(dataset["valid"][0], dataset["valid"][1], dataset["valid"][2])
+        # dataset["test"] = zip(dataset["test"][0], dataset["test"][1], dataset["test"][2])
 
         with open('dataset.pkl', 'wb') as file:
             pickle.dump(dataset, file)

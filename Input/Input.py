@@ -21,6 +21,7 @@ def get_multitrack_placeholders(shape, input_shape=None, name=""):
     d = tf.placeholder(dtype=tf.float32, shape=shape, name="drums_input" + name)
     return m,a,d
 
+
 def get_multitrack_input(shape, batch_size, name="", input_shape=None):
     '''
     Creates multitrack placeholders and a random shuffle queue based on it
@@ -42,6 +43,7 @@ def get_multitrack_input(shape, batch_size, name="", input_shape=None):
 
     return [m,a,d], queue, input_batch
 
+
 def crop(tensor, target_shape):
     '''
     Crops a 4D tensor [batch_size, width, height, channels] along the width and height axes to a target shape.
@@ -62,6 +64,7 @@ def crop(tensor, target_shape):
     if diff[2] > 0:
         output = output[:,:,diff[2]:-diff[2],:]
     return output
+
 
 def load_and_enqueue(sess, model_config, queue, enqueue_op, input_ph, song_list):
     '''

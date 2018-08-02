@@ -116,7 +116,7 @@ def getDSDFilelist(xml_path):
 #             vocals.append(duration)
 #
 #         # Mix together accompaniment, if it exists
-#         acc_tracks = track.xpath(".//instrument[not(instrumentName='Voice') and not(instrumentName='Mix') and not(instrumentName='Instrumental')]/relativeFilepath") #TODO # We assume that there is no distinction between male/female here
+#         acc_tracks = track.xpath(".//instrument[not(instrumentName='Voice') and not(instrumentName='Mix') and not(instrumentName='Instrumental')]/relativeFilepath")
 #         if len(acc_tracks) > 0:  # If there are vocals, get their file paths and mix them together
 #             acc_track = Input.Input.add_audio([db_path + os.path.sep + f.text for f in acc_tracks], "accmix")
 #             instrument_paths.append(acc_track)
