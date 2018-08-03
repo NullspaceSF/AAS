@@ -51,6 +51,15 @@ def get_audio_metadata(audioPath, sphereType=False):
     :param sphereType: 
     :return: 
     '''
+    #this will get rid of audiolab which is py2.7 only
+    # snd_file = SoundFile(audioPath, mode='r')
+    # inf = snd_file._info
+    # sr = inf.samplerate
+    # channels = inf.channels
+    # duration = float(inf.frames) / float(inf.samplerate)
+    # return int(sr), int(channels), float(duration)
+    #--delete below when uncommented
+
     ext = os.path.splitext(audioPath)[1][1:].lower()
     if ext=="aiff" or sphereType:  # SPHERE headers for the TIMIT dataset
         audio = scikits.audiolab.Sndfile(audioPath)

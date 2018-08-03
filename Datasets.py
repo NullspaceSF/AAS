@@ -5,7 +5,22 @@ import librosa
 
 import Input.Input
 from Sample import Sample
-
+#
+# def data_load(path, dataset):
+#     root = path
+#     if dataset == 'train_unsup':
+#         mix_list = glob.glob(root+dataset+'/*.wav')
+#         voice_list = list()
+#     else:
+#         mix_list = glob.glob(root+dataset+'/Mixed/*.wav')
+#         voice_list = glob.glob(root+dataset+'/Drums/*.wav')
+#     mix = list()
+#     voice = list()
+#     for item in mix_list:
+#         mix.append(Sample.from_path(item))
+#     for item in voice_list:
+#         voice.append(Sample.from_path(item))
+#     return mix, voice
 
 def subtract_audio(mix_list, instrument_list):
     '''
