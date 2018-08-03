@@ -67,7 +67,7 @@ class MultistreamWorker_GetSpectrogram:
                     communication_queue.put(sample)
             except Exception as e:
                 print(e)
-                print("Error while computing spectrogram for " + item.path + ". Skipping file.")
+                print("Error while computing spectrogram for " + str(item) + ". Skipping file.") #str(item) was item.list
 
         # This is necessary so that this process does not block. In particular, if there are elements still in the queue
         # from this process that were not yet 'picked up' somewhere else, join and terminate called on this process will
