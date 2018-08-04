@@ -54,8 +54,8 @@ def cfg():
                     "num_hop" : 256, # FFT Hop size
                     'expected_sr' : 8192, # Downsample all audio input to this sampling rate
                     'mono_downmix' : True, # Whether to downsample the audio input
-                    'cache_size' : 96, # was 64 Number of audio excerpts that are cached to build batches from !!!64!!
-                    'num_workers' : 6, # was 4 Number of processes reading audio and filling up the cache
+                    'cache_size' : 64, # was 64 Number of audio excerpts that are cached to build batches from !!!64!!
+                    'num_workers' : 8, # was 4 Number of processes reading audio and filling up the cache
                     "duration" : 10, # Duration in seconds of the audio excerpts in the cache (excluding input context)
                     'min_replacement_rate' : 8,  # roughly: how many cache entries to replace at least per batch on average. Can be fractional
                     'num_layers' : 4, # How many U-Net layers
@@ -481,7 +481,7 @@ _       '''
         print("Created dataset structure")
 
     # Optimize in a +supervised fashion until validation loss worsens
-    #sup_model_path = "checkpoints/382441_sup/382441_sup-306"
+    sup_model_path = "checkpoints/876373_sup/876373_sup-1001"
     sup_model_path, sup_loss = optimise(dataset=dataset, supervised=True)
     print("Supervised training finished! Saved model at " + sup_model_path + ". Performance: " + str(sup_loss))
     sup_scores = Test.bss_evaluate(model_config, dataset=dataset["test"],load_model=sup_model_path)
