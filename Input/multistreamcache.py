@@ -23,7 +23,7 @@ class MultistreamCache():
         self.alpha_smoother = alpha_smoother
 
         # Internal Data Structures
-        self.communication_queue = Queue(maxsize=50)  #TODO  hardcoded for now
+        self.communication_queue = Queue(maxsize=100)  #TODO  hardcoded for now
         self.worker_handles = []
         self.cache = [None] * self.cache_size
         self.idx_next_item_to_be_updated = 0
