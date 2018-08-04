@@ -481,7 +481,7 @@ _       '''
         print("Created dataset structure")
 
     # Optimize in a +supervised fashion until validation loss worsens
-    sup_model_path = "checkpoints/876373_sup/876373_sup-1001"
+    #sup_model_path = "checkpoints/876373_sup/876373_sup-1001"
     sup_model_path, sup_loss = optimise(dataset=dataset, supervised=True)
     print("Supervised training finished! Saved model at " + sup_model_path + ". Performance: " + str(sup_loss))
     sup_scores = Test.bss_evaluate(model_config, dataset=dataset["test"],load_model=sup_model_path)
