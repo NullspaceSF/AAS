@@ -13,13 +13,34 @@ import Utils
 import cPickle as pickle
 import Test
 
+import logging
+
+logger = logging.getLogger('scope.name')
+
+file_log_handler = logging.FileHandler('logfile.log')
+logger.addHandler(file_log_handler)
+
+stderr_log_handler = logging.StreamHandler()
+logger.addHandler(stderr_log_handler)
+
+# nice output format
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+file_log_handler.setFormatter(formatter)
+stderr_log_handler.setFormatter(formatter)
+
+logger.info('Info message')
+logger.error('Error message')
+logger.setLevel('DEBUG')
+
+
+
 ex = Experiment('Drum_Source_Separation')
 
 @ex.config
 def cfg():
     model_config = {"model_base_dir" : "checkpoints", # Base folder for model checkpoints
                     "log_dir" : "logs", # Base folder for logs files
-                    "batch_size" : 64, # Batch size
+                    "batch_size" : 64, # Batch size !!!64!!
                     "alpha" : 0.001, # Weighting for adversarial loss (unsupervised)
                     "beta" : 0.001, # Weighting for additive penalty (unsupervised)
                     "lam" : 10, # Weighting term lambda for WGAN gradient penalty
@@ -33,7 +54,7 @@ def cfg():
                     "num_hop" : 256, # FFT Hop size
                     'expected_sr' : 8192, # Downsample all audio input to this sampling rate
                     'mono_downmix' : True, # Whether to downsample the audio input
-                    'cache_size' : 64, # Number of audio excerpts that are cached to build batches from
+                    'cache_size' : 64, # Number of audio excerpts that are cached to build batches from !!!64!!
                     'num_workers' : 4, # Number of processes reading audio and filling up the cache
                     "duration" : 10, # Duration in seconds of the audio excerpts in the cache (excluding input context)
                     'min_replacement_rate' : 8,  # roughly: how many cache entries to replace at least per batch on average. Can be fractional
@@ -427,13 +448,12 @@ _       '''
         # mdb = Datasets.getMedleyDB("MedleyDB.xml")
         # ccm = Datasets.getCCMixter("CCMixter.xml")
         # ikala = Datasets.getIKala("iKala.xml")
-
         ###################### MODIFY ABOVE
 
         # Draw randomly from datasets
         dataset = dict()
         dataset["train_sup"] = dsd_train # 50 training tracks from DSD100 as supervised dataset
-        dataset["train_unsup"] = [list(), list(), list()] # Initialise unsupervised dateaset structure (fill up later)
+        dataset["train_unsup"] = [] # Initialise unsupervised dateaset structure (fill up later)
         dataset["valid"] = [dsd_test[0][:25], dsd_test[1][:25], dsd_test[2][:25]] # Validation and test contains 25 songs of DSD each, plus more (added later)
         dataset["test"] = [dsd_test[0][25:], dsd_test[1][25:], dsd_test[2][25:]]
 
@@ -451,10 +471,10 @@ _       '''
         ### AND READ IN YOUR OWN DATASET OBJECTS ACCORDING TO THE RULES SHOWN ABOVE, THEN ASSIGN THEM TO THE DATASET DICT WITH
         ### ENTRIES train_sup, valid and test, RESPECTIVELY.
 
-        # Zip up all paired dataset partitions so we have (mixture, accompaniment, drums) tuples
-        # dataset["train_sup"] = zip(dataset["train_sup"][0], dataset["train_sup"][1], dataset["train_sup"][2])
-        # dataset["valid"] = zip(dataset["valid"][0], dataset["valid"][1], dataset["valid"][2])
-        # dataset["test"] = zip(dataset["test"][0], dataset["test"][1], dataset["test"][2])
+        #Zip up all paired dataset partitions so we have (mixture, accompaniment, drums) tuples
+        dataset["train_sup"] = zip(dataset["train_sup"][0], dataset["train_sup"][1], dataset["train_sup"][2])
+        dataset["valid"] = zip(dataset["valid"][0], dataset["valid"][1], dataset["valid"][2])
+        dataset["test"] = zip(dataset["test"][0], dataset["test"][1], dataset["test"][2])
 
         with open('dataset.pkl', 'wb') as file:
             pickle.dump(dataset, file)
