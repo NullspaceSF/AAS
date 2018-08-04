@@ -38,7 +38,7 @@ ex = Experiment('Drum_Source_Separation')
 
 @ex.config
 def cfg():
-    model_config = {"model_base_dir" : "/home/ubuntu/AAS/checkpoints", # Base folder for model checkpoints
+    model_config = {"model_base_dir" : "checkpoints", # Base folder for model checkpoints
                     "log_dir" : "logs", # Base folder for logs files
                     "batch_size" : 64, # Batch size !!!64!!
                     "alpha" : 0.001, # Weighting for adversarial loss (unsupervised)
