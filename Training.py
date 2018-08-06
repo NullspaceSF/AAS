@@ -13,24 +13,24 @@ import Utils
 import cPickle as pickle
 import Test
 
-import logging
-
-logger = logging.getLogger('scope.name')
-
-file_log_handler = logging.FileHandler('logfile.log')
-logger.addHandler(file_log_handler)
-
-stderr_log_handler = logging.StreamHandler()
-logger.addHandler(stderr_log_handler)
-
-# nice output format
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-file_log_handler.setFormatter(formatter)
-stderr_log_handler.setFormatter(formatter)
-
-logger.info('Info message')
-logger.error('Error message')
-logger.setLevel('DEBUG')
+# import logging
+#
+# logger = logging.getLogger('scope.name')
+#
+# file_log_handler = logging.FileHandler('logfile.log')
+# logger.addHandler(file_log_handler)
+#
+# stderr_log_handler = logging.StreamHandler()
+# logger.addHandler(stderr_log_handler)
+#
+# # nice output format
+# formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+# file_log_handler.setFormatter(formatter)
+# stderr_log_handler.setFormatter(formatter)
+#
+# logger.info('Info message')
+# logger.error('Error message')
+# logger.setLevel('DEBUG')
 
 
 
@@ -60,8 +60,7 @@ def cfg():
                     'min_replacement_rate' : 0,  # roughly: how many cache entries to replace at least per batch on average. Can be fractional
                     'num_layers' : 4, # How many U-Net layers
                     }
-    experiment_id = 22223 #np.random.randint(0, 1000000)
-experiment_id = 22223 #np.random.randint(0,1000000)
+    experiment_id = np.random.randint(0, 1000000)
 
 @ex.capture
 def test(model_config, audio_list, model_folder, load_model):
