@@ -12,7 +12,7 @@ from Sample import Sample
 #         mix_list = glob.glob(root+dataset+'/*.wav')
 #         voice_list = list()
 #     else:
-#         mix_list = glob.glob(root+dataset+'/Mixed/*.wav')
+#         cd clob(root+dataset+'/Mixed/*.wav')
 #         voice_list = glob.glob(root+dataset+'/Drums/*.wav')
 #     mix = list()
 #     voice = list()

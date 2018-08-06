@@ -12,7 +12,9 @@ class MultistreamWorker_GetSpectrogram:
         :param options: Audio processing parameters and file list
         '''
         filename_list = options["file_list"]
+        print("filename_list[0]:" + str(len(filename_list[0])))
         num_files = len(filename_list)
+        print('numfiles' + str(num_files))
 
         n_fft = options['num_fft']
         hop_length = options['num_hop']
@@ -67,9 +69,9 @@ class MultistreamWorker_GetSpectrogram:
                     communication_queue.put(sample)
             except Exception as e:
                 print(e)
-                print("Error while computing spectrogram for " + str(item) + ". Skipping file.") #str(item) was item.list
+                print("Error while computing spectrogram for " + item.path + ". Skipping file.")
 
         # This is necessary so that this process does not block. In particular, if there are elements still in the queue
         # from this process that were not yet 'picked up' somewhere else, join and terminate called on this process will
         # block
-        communication_queue.cancel_join_thread()
+        #communication_queue.cancel_join_thread()

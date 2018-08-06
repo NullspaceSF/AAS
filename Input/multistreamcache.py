@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from multiprocessing import Process, Queue, Event
+from multiprocessing import Process, Queue, JoinableQueue, Event
 from numpy.random import randint, seed
 
 
@@ -23,7 +23,7 @@ class MultistreamCache():
         self.alpha_smoother = alpha_smoother
 
         # Internal Data Structures
-        self.communication_queue = Queue(maxsize=100)  #TODO  hardcoded for now
+        self.communication_queue = JoinableQueue(maxsize=100)  #TODO  hardcoded for now
         self.worker_handles = []
         self.cache = [None] * self.cache_size
         self.idx_next_item_to_be_updated = 0
@@ -47,7 +47,7 @@ class MultistreamCache():
         # Fill cache
         print('----- Filling cache (Size: {}) -------'.format(self.cache_size))
         for k in range(self.cache_size):
-            self.update_next_cache_item(self.communication_queue.get())
+            self.update_next_cache_item()
         print('----- Cache Filled -------')
 
         # We reset the update counter when starting the workers
@@ -61,8 +61,9 @@ class MultistreamCache():
             worker.join(timeout=3)
             worker.terminate()  # try harder to kill it off if necessary
 
-    def update_next_cache_item(self, data):
-        self.cache[self.idx_next_item_to_be_updated] = data
+    def update_next_cache_item(self):
+        self.cache[self.idx_next_item_to_be_updated] = self.communication_queue.get()
+        self.communication_queue.task_done()
         self.idx_next_item_to_be_updated = (self.idx_next_item_to_be_updated + 1) % self.cache_size
         self.counter_cache_items_updated += 1
 
@@ -86,7 +87,7 @@ class MultistreamCache():
                 break
 
             #print('Loading new item into cache from data list starting with ' + self.worker_options["file_list"][0][0].path)
-            self.update_next_cache_item(self.communication_queue.get())
+            self.update_next_cache_item()
             num_replacements_current += 1
 
         # Final update of self.num_replacements_smoothed
