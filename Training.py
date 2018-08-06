@@ -60,8 +60,8 @@ def cfg():
                     'min_replacement_rate' : 0,  # roughly: how many cache entries to replace at least per batch on average. Can be fractional
                     'num_layers' : 4, # How many U-Net layers
                     }
-
-experiment_id = np.random.randint(0,1000000)
+    experiment_id = 22222 #np.random.randint(0, 1000000)
+experiment_id = 22222 #np.random.randint(0,1000000)
 
 @ex.capture
 def test(model_config, audio_list, model_folder, load_model):
@@ -488,7 +488,7 @@ _       '''
     print(sup_scores)
 
     # Train same network architecture semi-supervised
-    unsup_model_path, unsup_loss = optimise(dataset=dataset, supervised=False)
+    unsup_model_path, unsup_loss = optimise(experiment_id, dataset=dataset, supervised=False)
     print("Unsupervised training finished! Performance: " + str(unsup_loss))
     unsup_scores = Test.bss_evaluate(model_config, dataset=dataset["test"],load_model=unsup_model_path)
     print(unsup_scores)
