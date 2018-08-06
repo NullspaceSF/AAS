@@ -40,7 +40,7 @@ ex = Experiment('Drum_Source_Separation')
 def cfg():
     model_config = {"model_base_dir" : "checkpoints", # Base folder for model checkpoints
                     "log_dir" : "logs", # Base folder for logs files
-                    "batch_size" : 64, # Batch size !!!64!!
+                    "batch_size" : 32, # Batch size !!!64!!
                     "alpha" : 0.001, # Weighting for adversarial loss (unsupervised)
                     "beta" : 0.001, # Weighting for additive penalty (unsupervised)
                     "lam" : 10, # Weighting term lambda for WGAN gradient penalty
@@ -55,9 +55,9 @@ def cfg():
                     'expected_sr' : 8192, # Downsample all audio input to this sampling rate
                     'mono_downmix' : True, # Whether to downsample the audio input
                     'cache_size' : 64, # was 64 Number of audio excerpts that are cached to build batches from !!!64!!
-                    'num_workers' : 8, # was 4 Number of processes reading audio and filling up the cache
+                    'num_workers' : 6, # was 4 Number of processes reading audio and filling up the cache
                     "duration" : 10, # Duration in seconds of the audio excerpts in the cache (excluding input context)
-                    'min_replacement_rate' : 8,  # roughly: how many cache entries to replace at least per batch on average. Can be fractional
+                    'min_replacement_rate' : 0,  # roughly: how many cache entries to replace at least per batch on average. Can be fractional
                     'num_layers' : 4, # How many U-Net layers
                     }
 
