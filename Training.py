@@ -61,7 +61,7 @@ def cfg():
                     'num_layers' : 4, # How many U-Net layers
                     }
 
-    experiment_id = np.random.randint(0,1000000)
+experiment_id = np.random.randint(0,1000000)
 
 @ex.capture
 def test(model_config, audio_list, model_folder, load_model):
@@ -482,7 +482,7 @@ _       '''
 
     # Optimize in a +supervised fashion until validation loss worsens
     #sup_model_path = "checkpoints/876373_sup/876373_sup-1001"
-    sup_model_path, sup_loss = optimise(dataset=dataset, supervised=True)
+    sup_model_path, sup_loss = optimise(experiment_id, dataset=dataset, supervised=True)
     print("Supervised training finished! Saved model at " + sup_model_path + ". Performance: " + str(sup_loss))
     sup_scores = Test.bss_evaluate(model_config, dataset=dataset["test"],load_model=sup_model_path)
     print(sup_scores)
