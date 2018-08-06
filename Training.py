@@ -60,8 +60,8 @@ def cfg():
                     'min_replacement_rate' : 0,  # roughly: how many cache entries to replace at least per batch on average. Can be fractional
                     'num_layers' : 4, # How many U-Net layers
                     }
-    experiment_id = 22222 #np.random.randint(0, 1000000)
-experiment_id = 22222 #np.random.randint(0,1000000)
+    experiment_id = 22223 #np.random.randint(0, 1000000)
+experiment_id = 22223 #np.random.randint(0,1000000)
 
 @ex.capture
 def test(model_config, audio_list, model_folder, load_model):
