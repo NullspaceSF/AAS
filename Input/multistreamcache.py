@@ -3,7 +3,6 @@
 from multiprocessing import Process, Queue, Event
 from numpy.random import randint, seed
 from Queue import Empty
-import logging
 
 class MultistreamCache():
     '''
@@ -69,7 +68,7 @@ class MultistreamCache():
             self.idx_next_item_to_be_updated = (self.idx_next_item_to_be_updated + 1) % self.cache_size
             self.counter_cache_items_updated += 1
         except Empty as error:
-            logging.info('Timeout: {}'.format(str(error)))
+            #logging.info('Timeout: {}'.format(str(error)))
             print('qsize: ' + str(self.communication_queue.qsize()))
             print(str(self.cache[self.idx_next_item_to_be_updated - 1])
 
