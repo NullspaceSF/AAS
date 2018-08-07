@@ -63,7 +63,6 @@ class MultistreamCache():
             worker.terminate()  # try harder to kill it off if necessary
 
     def update_next_cache_item(self):
-        if
         self.cache[self.idx_next_item_to_be_updated] = self.communication_queue.get()
         self.idx_next_item_to_be_updated = (self.idx_next_item_to_be_updated + 1) % self.cache_size
         self.counter_cache_items_updated += 1
