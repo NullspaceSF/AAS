@@ -67,7 +67,7 @@ class MultistreamWorker_GetSpectrogram:
                         sample.append(mag)
 
                     communication_queue.put(sample)
-                    print('length of queue: ', str(len(communication_queue)))
+                    print('length of queue: +1')
             except Exception as e:
                 print(e)
                 print("Error while computing spectrogram for " + item.path + ". Skipping file.")
