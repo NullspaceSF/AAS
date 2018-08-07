@@ -21,7 +21,7 @@ class MultistreamWorker_GetSpectrogram:
 
         # Re-seed RNG for this process
         np.random.seed()
-
+        print('in msw_gpg.run : ', str(exit_flag.is_set()))
         while not exit_flag.is_set():
             # Decide which element to read next randomly
             id_file_to_read = np.random.randint(num_files)
@@ -67,6 +67,7 @@ class MultistreamWorker_GetSpectrogram:
                         sample.append(mag)
 
                     communication_queue.put(sample)
+                    print('length of queue: ', str(len(communication_queue)))
             except Exception as e:
                 print(e)
                 print("Error while computing spectrogram for " + item.path + ". Skipping file.")
