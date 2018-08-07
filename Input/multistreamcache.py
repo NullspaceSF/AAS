@@ -2,7 +2,7 @@
 
 from multiprocessing import Process, Queue, Event
 from numpy.random import randint, seed
-from multiprocessing.Queue import Empty
+from Queue import Empty
 
 class MultistreamCache():
     '''
