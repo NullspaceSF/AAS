@@ -44,15 +44,15 @@ class MultistreamCache():
             print('in start_workers: ', str(k))
             p.start()
             self.worker_handles.append(p)
-
+        # We reset the update counter when starting the workers
+        self.counter_cache_items_updated = 0
         # Fill cache
         print('----- Filling cache (Size: {}) -------'.format(self.cache_size))
         for k in range(self.cache_size):
             self.update_next_cache_item()
         print('----- Cache Filled -------')
+        stop_workers(self)
 
-        # We reset the update counter when starting the workers
-        self.counter_cache_items_updated = 0
 
     def stop_workers(self):
         # We just kill them assuming there is nothing to be shut down properly.
