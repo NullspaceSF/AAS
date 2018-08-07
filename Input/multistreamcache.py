@@ -66,12 +66,13 @@ class MultistreamCache():
     def update_next_cache_item(self):
         try:
             self.cache[self.idx_next_item_to_be_updated] = self.communication_queue.get(timeout=10)
+            self.idx_next_item_to_be_updated = (self.idx_next_item_to_be_updated + 1) % self.cache_size
+            self.counter_cache_items_updated += 1
         except Empty as error:
             logging.info('Timeout: {}'.format(str(error)))
             print('qsize: ' + str(self.communication_queue.qsize()))
             print(str(self.cache[self.idx_next_item_to_be_updated - 1])
-        self.idx_next_item_to_be_updated = (self.idx_next_item_to_be_updated + 1) % self.cache_size
-        self.counter_cache_items_updated += 1
+
 
     def update_cache_from_queue(self):
 
