@@ -68,7 +68,8 @@ class MultistreamCache():
             self.cache[self.idx_next_item_to_be_updated] = self.communication_queue.get(timeout=10)
         except Empty as error:
             logging.info('Timeout: {}'.format(str(error)))
-            print(str(self.communication_queue.qsize()))
+            print('qsize: ' + str(self.communication_queue.qsize()))
+            print(str(self.cache[self.idx_next_item_to_be_updated - 1])
         self.idx_next_item_to_be_updated = (self.idx_next_item_to_be_updated + 1) % self.cache_size
         self.counter_cache_items_updated += 1
 
