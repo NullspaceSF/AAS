@@ -48,7 +48,14 @@ class MultistreamCache():
         # Fill cache
         print('----- Filling cache (Size: {}) -------'.format(self.cache_size))
         for k in range(self.cache_size):
-            self.update_next_cache_item()
+            try:
+                data = self.communication_queue.get(timeout=10)
+                self.update_next_cache_item(data)
+            except Empty as error:
+                print('Timeout: {}'.format(str(error)))
+                print('qsize: ' + str(self.communication_queue.qsize()))
+                print(str(self.cache[self.idx_next_item_to_be_updated - 1]
+
         print('----- Cache Filled -------')
 
         # We reset the update counter when starting the workers
@@ -62,15 +69,11 @@ class MultistreamCache():
             worker.join(timeout=5)
             worker.terminate()  # try harder to kill it off if necessary
 
-    def update_next_cache_item(self):
-        try:
-            self.cache[self.idx_next_item_to_be_updated] = self.communication_queue.get(timeout=10)
+    def update_next_cache_item(self, data):
+            self.cache[self.idx_next_item_to_be_updated] = data
             self.idx_next_item_to_be_updated = (self.idx_next_item_to_be_updated + 1) % self.cache_size
             self.counter_cache_items_updated += 1
-        except Empty as error:
-            #logging.info('Timeout: {}'.format(str(error)))
-            print('qsize: ' + str(self.communication_queue.qsize()))
-            print(str(self.cache[self.idx_next_item_to_be_updated - 1])
+
 
 
     def update_cache_from_queue(self):
@@ -93,7 +96,7 @@ class MultistreamCache():
                 break
 
             #print('Loading new item into cache from data list starting with ' + self.worker_options["file_list"][0][0].path)
-            self.update_next_cache_item()
+            self.update_next_cache_item(self.communication_queue.get())
             num_replacements_current += 1
             print('num_replacements_current: ' + str(num_replacements_current))
         # Final update of self.num_replacements_smoothed
