@@ -48,6 +48,7 @@ class MultistreamWorker_GetSpectrogram:
                     sample = list()
 
                     file = item[0]
+                    print(str(file))
                     metadata = [file.sample_rate, file.channels, file.duration]
                     mix_audio, mix_sr, source_start_frame, source_end_frame = Input.readAudio(file.path, offset=None, duration=options["duration"], sample_rate=options["expected_sr"], padding_duration=padding_duration, metadata=metadata)
                     mix_mag, _ = Input.audioFileToSpectrogram(mix_audio, fftWindowSize=n_fft, hopSize=hop_length)
@@ -65,7 +66,7 @@ class MultistreamWorker_GetSpectrogram:
                             source_shape = [mix_mag.shape[0], mix_mag.shape[1] - padding_frames*2]
                             mag = np.zeros(source_shape, dtype=np.float32) # Therefore insert zeros
                         sample.append(mag)
-
+                    print('before put()')
                     communication_queue.put(sample)
                     print('length of queue: +1')
             except Exception as e:

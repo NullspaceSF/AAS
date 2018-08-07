@@ -408,7 +408,7 @@ def optimise(dataset, supervised):
     model_path = None
     worse_epochs = 0
     best_model_path = ""
-    while worse_epochs < 2: #TODO: change back to 1!
+    while worse_epochs < 1: #TODO: change back to 1!
         print("EPOCH: " + str(epoch))
         model_path = train(sup_dataset=dataset["train_sup"], unsup_dataset=unsup_dataset, model_folder=model_folder, load_model=model_path)
         curr_loss = test(audio_list=dataset["valid"], model_folder=model_folder, load_model=model_path)
