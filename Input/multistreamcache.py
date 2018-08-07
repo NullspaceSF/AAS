@@ -23,7 +23,7 @@ class MultistreamCache():
         self.alpha_smoother = alpha_smoother
 
         # Internal Data Structures
-        self.communication_queue = Queue(maxsize=64)  #TODO  hardcoded for now
+        self.communication_queue = Queue(maxsize=40)  #TODO  hardcoded for now
         self.worker_handles = []
         self.cache = [None] * self.cache_size
         self.idx_next_item_to_be_updated = 0
@@ -41,6 +41,7 @@ class MultistreamCache():
                         args=(self.communication_queue,
                               self.exit_flag,
                               self.worker_options))
+            print('in start_workers: ', str(p.pid()))
             p.start()
             self.worker_handles.append(p)
 
