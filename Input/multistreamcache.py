@@ -3,6 +3,7 @@
 from multiprocessing import Process, Queue, Event
 from numpy.random import randint, seed
 from Queue import Empty
+import logging
 
 class MultistreamCache():
     '''
