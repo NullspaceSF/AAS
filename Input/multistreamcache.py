@@ -51,7 +51,7 @@ class MultistreamCache():
         for k in range(self.cache_size):
             self.update_next_cache_item()
         print('----- Cache Filled -------')
-        stop_workers(self)
+        self.stop_workers(self)
 
 
     def stop_workers(self):
