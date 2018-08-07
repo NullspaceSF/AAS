@@ -166,7 +166,7 @@ def train(model_config, sup_dataset, model_folder, unsup_dataset=None, load_mode
     )
 
     # Creating unsupervised batch generator if needed
-    if unsup_dataset != None:
+    if unsup_dataset is not None:
         unsup_batch_gens = list()
         for i in range(3):
             shape = (sep_input_shape if i==0 else sep_output_shape)
@@ -181,7 +181,7 @@ def train(model_config, sup_dataset, model_folder, unsup_dataset=None, load_mode
     sup_batch_gen.start_workers()
     print("Started worker!")
 
-    if unsup_dataset != None:
+    if unsup_dataset is not None:
         for gen in unsup_batch_gens:
             print("Starting worker")
             gen.start_workers()
@@ -192,7 +192,7 @@ def train(model_config, sup_dataset, model_folder, unsup_dataset=None, load_mode
     mix = Input.crop(mix_context, sep_output_shape)
     mix_norm, mix_context_norm, acc_norm, drums_norm = Input.norm(mix), Input.norm(mix_context), Input.norm(acc), Input.norm(drums)
 
-    if unsup_dataset != None:
+    if unsup_dataset is not None:
         mix_context_u,acc_u,drums_u = Input.get_multitrack_placeholders(sep_output_shape, sep_input_shape, "unsup")
         mix_u = Input.crop(mix_context_u, sep_output_shape)
         mix_norm_u, mix_context_norm_u, acc_norm_u, drums_norm_u = Input.norm(mix_u), Input.norm(mix_context_u), Input.norm(acc_u), Input.norm(drums_u)
@@ -203,7 +203,7 @@ def train(model_config, sup_dataset, model_folder, unsup_dataset=None, load_mode
     # Separator
     separator_acc_norm, separator_drums_norm = separator_func(mix_context_norm, reuse=False)
     separator_acc, separator_drums = Input.denorm(separator_acc_norm), Input.denorm(separator_drums_norm)
-    if unsup_dataset != None:
+    if unsup_dataset is not None:
         separator_acc_norm_u, separator_drums_norm_u = separator_func(mix_context_norm_u, reuse=True)
         separator_acc_u, separator_drums_u = Input.denorm(separator_acc_norm_u), Input.denorm(separator_drums_norm_u)
         mask_loss_u = tf.reduce_mean(tf.square(mix_u - separator_acc_u - separator_drums_u))
@@ -211,7 +211,7 @@ def train(model_config, sup_dataset, model_folder, unsup_dataset=None, load_mode
 
     # SUMMARIES FOR INPUT AND SEPARATOR
     tf.summary.scalar("mask_loss", mask_loss, collections=["sup", "unsup"])
-    if unsup_dataset != None:
+    if unsup_dataset is not None:
         tf.summary.scalar("mask_loss_u", mask_loss_u, collections=["unsup"])
         tf.summary.scalar("acc_norm_mean_u", tf.reduce_mean(acc_norm_u), collections=["acc_disc"])
         tf.summary.scalar("drums_norm_mean_u", tf.reduce_mean(drums_norm_u), collections=["drums_disc"])
@@ -227,7 +227,7 @@ def train(model_config, sup_dataset, model_folder, unsup_dataset=None, load_mode
 
     # BUILD DISCRIMINATORS, if unsupervised training
     unsup_separator_loss = 0
-    if unsup_dataset != None:
+    if unsup_dataset is not None:
         disc_func = Models.WGAN_Critic.dcgan
 
         # Define real and fake inputs for both discriminators - if separator output and dsicriminator input shapes do not fit perfectly, we will do a centre crop and only discriminate that part
@@ -271,7 +271,7 @@ def train(model_config, sup_dataset, model_folder, unsup_dataset=None, load_mode
     print("Drums_Disc_Vars: " + str(Utils.getNumParams(drums_disc_vars)))
     print("Acc_Disc_Vars: " + str(Utils.getNumParams(acc_disc_vars)))
 
-    if unsup_dataset != None:
+    if unsup_dataset is not None:
         with tf.variable_scope("drums_disc_solver"):
             drums_disc_solver = tf.train.AdamOptimizer(learning_rate=disc_lr).minimize(drums_disc_loss, var_list=drums_disc_vars, colocate_gradients_with_ops=True)
         with tf.variable_scope("acc_disc_solver"):
@@ -301,7 +301,7 @@ def train(model_config, sup_dataset, model_folder, unsup_dataset=None, load_mode
 
     # CHECKPOINTING
     # Load pretrained model to continue training, if we are supposed to
-    if load_model != None:
+    if load_model is not None:
         restorer = tf.train.Saver(tf.global_variables(), write_version=tf.train.SaverDef.V2)
         print("Num of variables" + str(len(tf.global_variables())))
         restorer.restore(sess, load_model)
@@ -316,7 +316,7 @@ def train(model_config, sup_dataset, model_folder, unsup_dataset=None, load_mode
     _init_step = _global_step
     it = 0
     while run:
-        if unsup_dataset != None:
+        if unsup_dataset is not None:
             # TRAIN DISCRIMINATORS
             for disc_it in range(model_config["num_disc"]):
                     batches = list()
@@ -341,7 +341,7 @@ def train(model_config, sup_dataset, model_folder, unsup_dataset=None, load_mode
         # TRAIN SEPARATOR
         sup_batch = sup_batch_gen.get_batch()
 
-        if unsup_dataset != None:
+        if unsup_dataset is not None:
             # SUP + UNSUPERVISED TRAINING
             unsup_batches = list()
             for gen in unsup_batch_gens:
@@ -368,7 +368,7 @@ def train(model_config, sup_dataset, model_folder, unsup_dataset=None, load_mode
             print("Finished training phase, stopping batch generators")
             sup_batch_gen.stop_workers()
 
-            if unsup_dataset != None:
+            if unsup_dataset is not None:
                 for gen in unsup_batch_gens:
                     gen.stop_workers()
 
