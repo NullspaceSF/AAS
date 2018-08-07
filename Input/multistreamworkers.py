@@ -1,5 +1,5 @@
 import numpy as np
-from Input import Input
+import Input
 from Sample import Sample
 
 class MultistreamWorker_GetSpectrogram:

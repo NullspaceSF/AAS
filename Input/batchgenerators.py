@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from Input import multistreamcache
-from Input import multistreamworkers
+import multistreamcache
+import multistreamworkers
 import Utils
 
 
