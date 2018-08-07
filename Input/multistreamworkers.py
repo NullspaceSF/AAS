@@ -74,4 +74,4 @@ class MultistreamWorker_GetSpectrogram:
         # This is necessary so that this process does not block. In particular, if there are elements still in the queue
         # from this process that were not yet 'picked up' somewhere else, join and terminate called on this process will
         # block
-        #communication_queue.cancel_join_thread()
+        communication_queue.cancel_join_thread()
