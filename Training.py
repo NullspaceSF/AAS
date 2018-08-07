@@ -52,7 +52,7 @@ def cfg():
                     "init_disc_lr" : 5e-5, # Discriminator(s) learning rate
                     "init_sup_sep_lr" : 5e-5, # Supervised separator learning rate
                     "init_unsup_sep_lr" : 5e-5, # Unsupervised separator learning rate
-                    "epoch_it" : 5, # Number of supervised separator steps per epoch
+                    "epoch_it" : 1000, # Number of supervised separator steps per epoch
                     "num_disc": 5,  # Number of discriminator iterations per separator update
                     "num_frames" : 128, # DESIRED number of time frames in the spectrogram per sample (this can be increased when using U-net due to its limited output sizes)
                     "num_fft" : 512, # FFT Size
