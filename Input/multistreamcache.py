@@ -41,7 +41,7 @@ class MultistreamCache():
                         args=(self.communication_queue,
                               self.exit_flag,
                               self.worker_options))
-            print('in start_workers: ', str(p.pid()))
+            print('in start_workers: ', str(k))
             p.start()
             self.worker_handles.append(p)
 
