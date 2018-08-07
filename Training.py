@@ -60,7 +60,7 @@ def cfg():
                     'expected_sr' : 16384, # Downsample all audio input to this sampling rate
                     'mono_downmix' : True, # Whether to downsample the audio input
                     'cache_size' : 72, # was 64 Number of audio excerpts that are cached to build batches from !!!64!!
-                    'num_workers' : 4, # was 4 Number of processes reading audio and filling up the cache
+                    'num_workers' : 1, # was 4 Number of processes reading audio and filling up the cache
                     "duration" : 5, # Duration in seconds of the audio excerpts in the cache (excluding input context)
                     'min_replacement_rate' : .2,  # roughly: how many cache entries to replace at least per batch on average. Can be fractional
                     'num_layers' : 4, # How many U-Net layers
