@@ -35,6 +35,8 @@ import Test
 
 
 ex = Experiment('Drum_Source_Separation')
+experiment_id = np.random.randint(0, 1000000)
+
 
 @ex.config
 def cfg():
@@ -47,20 +49,21 @@ def cfg():
                     "init_disc_lr" : 5e-5, # Discriminator(s) learning rate
                     "init_sup_sep_lr" : 5e-5, # Supervised separator learning rate
                     "init_unsup_sep_lr" : 5e-5, # Unsupervised separator learning rate
-                    "epoch_it" : 1, # Number of supervised separator steps per epoch
+                    "epoch_it" : 2, # Number of supervised separator steps per epoch
                     "num_disc": 5,  # Number of discriminator iterations per separator update
                     "num_frames" : 128, # DESIRED number of time frames in the spectrogram per sample (this can be increased when using U-net due to its limited output sizes)
                     "num_fft" : 512, # FFT Size
                     "num_hop" : 256, # FFT Hop size
                     'expected_sr' : 16384, # Downsample all audio input to this sampling rate
                     'mono_downmix' : True, # Whether to downsample the audio input
-                    'cache_size' : 64, # was 64 Number of audio excerpts that are cached to build batches from !!!64!!
-                    'num_workers' : 4, # was 4 Number of processes reading audio and filling up the cache
+                    'cache_size' : 72, # was 64 Number of audio excerpts that are cached to build batches from !!!64!!
+                    'num_workers' : 6, # was 4 Number of processes reading audio and filling up the cache
                     "duration" : 5, # Duration in seconds of the audio excerpts in the cache (excluding input context)
-                    'min_replacement_rate' : 8,  # roughly: how many cache entries to replace at least per batch on average. Can be fractional
+                    'min_replacement_rate' : .2,  # roughly: how many cache entries to replace at least per batch on average. Can be fractional
                     'num_layers' : 4, # How many U-Net layers
                     }
-experiment_id = np.random.randint(0, 1000000)
+    experiment_id = np.random.randint(0, 1000000)
+
 
 @ex.capture
 def test(model_config, audio_list, model_folder, load_model):
@@ -402,7 +405,7 @@ def optimise(dataset, supervised):
     model_path = None
     worse_epochs = 0
     best_model_path = ""
-    while worse_epochs < 1: # Early stopping on validation set after a few epochs
+    while worse_epochs < 1:
         print("EPOCH: " + str(epoch))
         model_path = train(sup_dataset=dataset["train_sup"], unsup_dataset=unsup_dataset, model_folder=model_folder, load_model=model_path)
         curr_loss = test(audio_list=dataset["valid"], model_folder=model_folder, load_model=model_path)

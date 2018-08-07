@@ -121,7 +121,7 @@ class BatchGen_Paired:
 
         input_mix = np.zeros(self.options["input_shape"], dtype=np.float32)
         acc = np.zeros(self.options["output_shape"], dtype=np.float32)
-        voice = np.zeros(self.options["output_shape"], dtype=np.float32)
+        drums = np.zeros(self.options["output_shape"], dtype=np.float32)
 
         time_padding = (self.options["input_shape"][2] - self.options["output_shape"][2])/2 # Amount of temporal context in the input on each side
 
@@ -138,10 +138,10 @@ class BatchGen_Paired:
             stop_idx_input = start_idx_input + self.options["output_shape"][2] # exclusive idx
 
             acc[sample_num,:,:,0] = Utils.pad_freqs(cache_item[1][:,start_idx_input:stop_idx_input], self.options["output_shape"][1:3])
-            voice[sample_num, :, :, 0] = Utils.pad_freqs(cache_item[2][:,start_idx_input:stop_idx_input], self.options["output_shape"][1:3])
+            drums[sample_num, :, :, 0] = Utils.pad_freqs(cache_item[2][:,start_idx_input:stop_idx_input], self.options["output_shape"][1:3])
 
             # Read mixture with context
             assert(cache_item[0].shape[1] > 0)
             input_mix[sample_num, :, :, 0] = Utils.pad_freqs(cache_item[0][:,start_idx_input:stop_idx_input+2*time_padding], self.options["input_shape"][1:3])
 
-        return [input_mix, acc, voice]
+        return [input_mix, acc, drums]

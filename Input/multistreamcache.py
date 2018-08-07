@@ -23,7 +23,7 @@ class MultistreamCache():
         self.alpha_smoother = alpha_smoother
 
         # Internal Data Structures
-        self.communication_queue = Queue(maxsize=100)  #TODO  hardcoded for now
+        self.communication_queue = Queue(maxsize=150)  #TODO  hardcoded for now
         self.worker_handles = []
         self.cache = [None] * self.cache_size
         self.idx_next_item_to_be_updated = 0
@@ -59,7 +59,7 @@ class MultistreamCache():
         # This is somewhat brutal but simplifies things a lot and is enough for now
         self.exit_flag.set()
         for worker in self.worker_handles:
-            worker.join(timeout=3)
+            worker.join(timeout=5)
             worker.terminate()  # try harder to kill it off if necessary
 
     def update_next_cache_item(self):
@@ -89,9 +89,10 @@ class MultistreamCache():
             #print('Loading new item into cache from data list starting with ' + self.worker_options["file_list"][0][0].path)
             self.update_next_cache_item()
             num_replacements_current += 1
-
+            print('num_replacements_current: ' + str(num_replacements_current))
         # Final update of self.num_replacements_smoothed
         self.average_replacement_rate = average_replacement_rate_updated
+        print('ave_replace_rate: ' + str(self.average_replacement_rate) )
 
     def get_cache_item(self, idx):
         return self.cache[idx]
