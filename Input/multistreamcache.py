@@ -2,7 +2,7 @@
 
 from multiprocessing import Process, Queue, Event
 from numpy.random import randint, seed
-
+from multiprocessing.Queue import Empty
 
 class MultistreamCache():
     '''
@@ -63,7 +63,11 @@ class MultistreamCache():
             worker.terminate()  # try harder to kill it off if necessary
 
     def update_next_cache_item(self):
-        self.cache[self.idx_next_item_to_be_updated] = self.communication_queue.get()
+        try:
+            self.cache[self.idx_next_item_to_be_updated] = self.communication_queue.get(timeout=10)
+        except Empty as error:
+            logging.info('Timeout: {}'.format(str(error)))
+            print(str(self.communication_queue.qsize()))
         self.idx_next_item_to_be_updated = (self.idx_next_item_to_be_updated + 1) % self.cache_size
         self.counter_cache_items_updated += 1
 
