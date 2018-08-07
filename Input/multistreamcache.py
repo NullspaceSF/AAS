@@ -54,7 +54,7 @@ class MultistreamCache():
             except Empty as error:
                 print('Timeout: {}'.format(str(error)))
                 print('qsize: ' + str(self.communication_queue.qsize()))
-                print(str(self.cache[self.idx_next_item_to_be_updated - 1]
+                print(str(self.cache[self.idx_next_item_to_be_updated - 1]))
 
         print('----- Cache Filled -------')
 
