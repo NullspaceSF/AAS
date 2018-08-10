@@ -41,8 +41,8 @@ class MultistreamCache():
                         args=(self.communication_queue,
                               self.exit_flag,
                               self.worker_options))
-            #print(str(self.worker_options))
-            #print('in start_workers: ', str(k))
+            print(str(self.worker_options))
+            print('in start_workers: ', str(k))
             p.start()
             self.worker_handles.append(p)
 
@@ -99,10 +99,10 @@ class MultistreamCache():
             #print('Loading new item into cache from data list starting with ' + self.worker_options["file_list"][0][0].path)
             self.update_next_cache_item(self.communication_queue.get())
             num_replacements_current += 1
-            #print('num_replacements_current: ' + str(num_replacements_current))
+            print('num_replacements_current: ' + str(num_replacements_current))
         # Final update of self.num_replacements_smoothed
         self.average_replacement_rate = average_replacement_rate_updated
-        #print('ave_replace_rate: ' + str(self.average_replacement_rate) )
+        print('ave_replace_rate: ' + str(self.average_replacement_rate) )
 
     def get_cache_item(self, idx):
         return self.cache[idx]
