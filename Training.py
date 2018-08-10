@@ -38,7 +38,7 @@ logger.warning('-----wtf?------')
 
 
 ex = Experiment('Drum_Source_Separation')
-experiment_id = 111      # np.random.randint(0, 1000000)
+experiment_id = 112      # np.random.randint(0, 1000000)
 
 
 @ex.config
@@ -62,10 +62,10 @@ def cfg():
                     'cache_size' : 72, # was 64 Number of audio excerpts that are cached to build batches from !!!64!!
                     'num_workers' : 4, # was 4 Number of processes reading audio and filling up the cache
                     "duration" : 5, # Duration in seconds of the audio excerpts in the cache (excluding input context)
-                    'min_replacement_rate' : .3,  # roughly: how many cache entries to replace at least per batch on average. Can be fractional
+                    'min_replacement_rate' : .4,  # roughly: how many cache entries to replace at least per batch on average. Can be fractional
                     'num_layers' : 4, # How many U-Net layers
                     }
-    experiment_id = 111
+    experiment_id = 112
 
 
 @ex.capture
@@ -306,7 +306,7 @@ def train(model_config, sup_dataset, model_folder, unsup_dataset=None, load_mode
     # Load pretrained model to continue training, if we are supposed to
     if load_model is not None:
         restorer = tf.train.Saver(tf.global_variables(), write_version=tf.train.SaverDef.V2)
-        print("Num of variables" + str(len(tf.global_variables())))
+        print("Num of variables: " + str(len(tf.global_variables())))
         restorer.restore(sess, load_model)
         print('Pre-trained model restored from file ' + load_model)
 
@@ -449,18 +449,18 @@ _       '''
 
         ###################### MODIFY BELOW
 
-        dsd_train, dsd_test = Datasets.getDSDFilelist("DSD100.xml")
+        # dsd_train, dsd_test = Datasets.getDSDFilelist("DSD100.xml")
         # mdb = Datasets.getMedleyDB("MedleyDB.xml")
         # ccm = Datasets.getCCMixter("CCMixter.xml")
         # ikala = Datasets.getIKala("iKala.xml")
         ###################### MODIFY ABOVE
 
         # Draw randomly from datasets
-        dataset = dict()
-        dataset["train_sup"] = dsd_train # 50 training tracks from DSD100 as supervised dataset
-        dataset["train_unsup"] = [] # Initialise unsupervised dateaset structure (fill up later)
-        dataset["valid"] = [dsd_test[0][:25], dsd_test[1][:25], dsd_test[2][:25]] # Validation and test contains 25 songs of DSD each, plus more (added later)
-        dataset["test"] = [dsd_test[0][25:], dsd_test[1][25:], dsd_test[2][25:]]
+        # dataset = dict()
+        # dataset["train_sup"] = dsd_train # 50 training tracks from DSD100 as supervised dataset
+        # dataset["train_unsup"] = [] # Initialise unsupervised dateaset structure (fill up later)
+        # dataset["valid"] = [dsd_test[0][:25], dsd_test[1][:25], dsd_test[2][:25]] # Validation and test contains 25 songs of DSD each, plus more (added later)
+        # dataset["test"] = [dsd_test[0][25:], dsd_test[1][25:], dsd_test[2][25:]]
 
         # Go through MedleyDB, CCMixter, iKala
         # for ds in [mdb, ccm, ikala]:
