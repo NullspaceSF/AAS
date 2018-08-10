@@ -38,7 +38,7 @@ logger.warning('-----wtf?------')
 
 
 ex = Experiment('Drum_Source_Separation')
-experiment_id = 112      # np.random.randint(0, 1000000)
+experiment_id = np.random.randint(0, 10000)
 
 
 @ex.config
@@ -65,7 +65,7 @@ def cfg():
                     'min_replacement_rate' : .4,  # roughly: how many cache entries to replace at least per batch on average. Can be fractional
                     'num_layers' : 4, # How many U-Net layers
                     }
-    experiment_id = 112
+    experiment_id = experiment_id
 
 
 @ex.capture
