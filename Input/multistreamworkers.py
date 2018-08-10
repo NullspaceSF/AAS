@@ -12,7 +12,7 @@ class MultistreamWorker_GetSpectrogram:
         :param options: Audio processing parameters and file list
         '''
         filename_list = options["file_list"]
-        print("filename_list[0]:" + str(len(filename_list[0])))
+        #print("filename_list[0]:" + str(len(filename_list[0])))
         num_files = len(filename_list)
         print('numfiles' + str(num_files))
 
