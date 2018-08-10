@@ -65,7 +65,7 @@ def bss_evaluate(model_config, dataset, load_model):
     # Initialize total score object
     song_scores = list()
 
-    for multitrack in dataset:
+    for multitrack in dataset[:10]:
         filename = multitrack[0].path
         print("Evaluating file " + filename)
         if filename.__contains__("DSD100"):
@@ -168,7 +168,7 @@ def bss_evaluate(model_config, dataset, load_model):
         song_scores.append(song_info)
         print(song_info)
 
-    with open("evaluation_" + load_model + "_.pkl", "wb") as file: #TODO proper filename
+    with open(load_model  + "/BSS_evaluation.pkl", "wb") as file: #TODO proper filename
         pickle.dump(song_scores, file)
 
     # Close session, clear computational graph

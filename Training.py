@@ -38,7 +38,7 @@ logger.warning('-----wtf?------')
 
 
 ex = Experiment('Drum_Source_Separation')
-experiment_id = np.random.randint(0, 1000000)
+experiment_id = 111      # np.random.randint(0, 1000000)
 
 
 @ex.config
@@ -62,10 +62,10 @@ def cfg():
                     'cache_size' : 72, # was 64 Number of audio excerpts that are cached to build batches from !!!64!!
                     'num_workers' : 4, # was 4 Number of processes reading audio and filling up the cache
                     "duration" : 5, # Duration in seconds of the audio excerpts in the cache (excluding input context)
-                    'min_replacement_rate' : .2,  # roughly: how many cache entries to replace at least per batch on average. Can be fractional
+                    'min_replacement_rate' : .3,  # roughly: how many cache entries to replace at least per batch on average. Can be fractional
                     'num_layers' : 4, # How many U-Net layers
                     }
-    experiment_id = experiment_id
+    experiment_id = 111
 
 
 @ex.capture
@@ -477,13 +477,13 @@ _       '''
         ### ENTRIES train_sup, valid and test, RESPECTIVELY.
 
         #Zip up all paired dataset partitions so we have (mixture, accompaniment, drums) tuples
-        dataset["train_sup"] = zip(dataset["train_sup"][0], dataset["train_sup"][1], dataset["train_sup"][2])
-        dataset["valid"] = zip(dataset["valid"][0], dataset["valid"][1], dataset["valid"][2])
-        dataset["test"] = zip(dataset["test"][0], dataset["test"][1], dataset["test"][2])
+        # dataset["train_sup"] = zip(dataset["train_sup"][0], dataset["train_sup"][1], dataset["train_sup"][2])
+        # dataset["valid"] = zip(dataset["valid"][0], dataset["valid"][1], dataset["valid"][2])
+        # dataset["test"] = zip(dataset["test"][0], dataset["test"][1], dataset["test"][2])
 
-        with open('dataset.pkl', 'wb') as file:
-            pickle.dump(dataset, file)
-        print("Created dataset structure")
+        # with open('dataset.pkl', 'wb') as file:
+        #     pickle.dump(dataset, file)
+        # print("Created dataset structure")
 
     # Optimize in a +supervised fashion until validation loss worsens
     #sup_model_path = "checkpoints/876373_sup/876373_sup-1001"
