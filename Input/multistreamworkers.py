@@ -48,7 +48,6 @@ class MultistreamWorker_GetSpectrogram:
                     sample = list()
 
                     file = item[0]
-                    print(str(file))
                     metadata = [file.sample_rate, file.channels, file.duration]
                     mix_audio, mix_sr, source_start_frame, source_end_frame = Input.readAudio(file.path, offset=None, duration=options["duration"], sample_rate=options["expected_sr"], padding_duration=padding_duration, metadata=metadata)
                     mix_mag, _ = Input.audioFileToSpectrogram(mix_audio, fftWindowSize=n_fft, hopSize=hop_length)
