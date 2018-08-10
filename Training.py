@@ -38,7 +38,7 @@ logger.warning('-----wtf?------')
 
 
 ex = Experiment('Drum_Source_Separation')
-experiment_id = 222 #np.random.randint(0, 10000)
+experiment_id = 333 #np.random.randint(0, 10000)
 
 
 @ex.config
@@ -62,10 +62,10 @@ def cfg():
                     'cache_size' : 72, # was 64 Number of audio excerpts that are cached to build batches from !!!64!!
                     'num_workers' : 4, # was 4 Number of processes reading audio and filling up the cache
                     "duration" : 5, # Duration in seconds of the audio excerpts in the cache (excluding input context)
-                    'min_replacement_rate' : .4,  # roughly: how many cache entries to replace at least per batch on average. Can be fractional
+                    'min_replacement_rate' : .3,  # roughly: how many cache entries to replace at least per batch on average. Can be fractional
                     'num_layers' : 4, # How many U-Net layers
                     }
-    experiment_id = 222
+    experiment_id = 333
 
 
 @ex.capture
@@ -486,9 +486,9 @@ _       '''
         # print("Created dataset structure")
 
     # Optimize in a +supervised fashion until validation loss worsens
-    #sup_model_path = "checkpoints/876373_sup/876373_sup-1001"
-    sup_model_path, sup_loss = optimise(dataset=dataset, supervised=True)
-    print("Supervised training finished! Saved model at " + sup_model_path + ". Performance: " + str(sup_loss))
+    sup_model_path = "/home/ubuntu/AAS/checkpoints/111_sup/111_sup-3003"
+    # sup_model_path, sup_loss = optimise(dataset=dataset, supervised=True)
+    #print("Supervised training finished! Saved model at " + sup_model_path + ". Performance: " + str(sup_loss))
     sup_scores = Test.bss_evaluate(model_config, dataset=dataset["test"],load_model=sup_model_path)
     print(sup_scores)
 

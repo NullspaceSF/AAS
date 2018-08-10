@@ -65,9 +65,9 @@ class MultistreamWorker_GetSpectrogram:
                             source_shape = [mix_mag.shape[0], mix_mag.shape[1] - padding_frames*2]
                             mag = np.zeros(source_shape, dtype=np.float32) # Therefore insert zeros
                         sample.append(mag)
-                    print('before put()')
+                    #print('before put()')
                     communication_queue.put(sample)
-                    print('length of queue: +1')
+                    #print('length of queue: +1')
             except Exception as e:
                 print(e)
                 print("Error while computing spectrogram for " + item.path + ". Skipping file.")
