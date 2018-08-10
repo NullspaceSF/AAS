@@ -168,8 +168,8 @@ def bss_evaluate(model_config, dataset, load_model):
         song_scores.append(song_info)
         print(song_info)
 
-    with open('_test_' + load_model  + "_BSS_eval.pkl", "wb") as file: #TODO proper filename
-        pickle.dump(song_scores, file)
+    # with open("_BSS_eval.pkl", "wb") as file: #TODO proper filename
+    #     pickle.dump(song_scores, file)
 
     # Close session, clear computational graph
     sess.close()
